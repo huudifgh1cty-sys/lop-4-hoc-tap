@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đấu Trường Học Tập - Lớp 4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+:root{
+  --navy:#161A3A;
+  --navy-light:#232A5C;
+  --purple:#6C5CE7;
+  --purple-dark:#4E3FC4;
+  --gold:#FFC93C;
+  --coral:#FF6B6B;
+  --teal:#3DD6C0;
+  --blue:#4E8CFF;
+  --cream:#F7F5FF;
+  --ink:#1B1B3A;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Nunito',sans-serif;
+  background:radial-gradient(ellipse at top, #232A5C 0%, #16143A 65%, #0C0E24 100%);
+  color:var(--cream);
+  min-height:100vh;
+  padding:32px 16px;
+  overflow-x:hidden;
+}
+
+.stars{position:fixed; inset:0; pointer-events:none; z-index:0;}
+.star{position:absolute; background:#fff; border-radius:50%; opacity:0.6;}
+
+.wrap{max-width:640px; margin:0 auto; position:relative; z-index:1;}
+
+h1.game-title{
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:26px;
+  text-align:center;
+  margin:0 0 4px;
+  letter-spacing:0.5px;
+  background:linear-gradient(90deg,var(--gold),var(--teal),var(--blue));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+p.game-sub{text-align:center; margin:0 0 24px; color:#B7B9E0; font-size:14px; font-weight:600;}
+
+.track-wrap{position:relative; height:64px; margin:0 0 28px;}
+.track-line{
+  position:absolute; top:50%; left:22px; right:22px; height:6px;
+  background:#2C3170; border-radius:3px; transform:translateY(-50%); overflow:hidden;
+}
+.track-fill{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--coral),var(--gold));
+  border-radius:3px; transition:width 0.6s cubic-bezier(.4,1.4,.6,1);
+}
+.rocket{
+  position:absolute; top:50%; left:0%;
+  transform:translate(-50%,-50%) rotate(90deg);
+  font-size:26px; transition:left 0.6s cubic-bezier(.4,1.4,.6,1);
+  filter:drop-shadow(0 0 6px rgba(255,201,60,0.6));
+}
+.planet{
+  position:absolute; top:50%; width:14px; height:14px; border-radius:50%;
+  transform:translate(-50%,-50%); border:2px solid #0C0E24;
+}
+
+.card{
+  background:var(--navy-light);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:26px 22px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.35);
+}
+
+.section-label{
+  font-family:'Baloo 2',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  color:#9FA3D6;
+  letter-spacing:0.5px;
+  margin:0 0 10px;
+  text-transform:uppercase;
+}
+
+.subject-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:22px;
+}
+.subject-card{
+  background:rgba(255,255,255,0.05);
+  border:2px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:14px;
+  cursor:pointer;
+  text-align:center;
+  transition:transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.subject-card:hover{transform:translateY(-2px); background:rgba(255,255,255,0.09);}
+.subject-card.selected{
+  border-color:var(--gold);
+  background:rgba(255,201,60,0.1);
+}
+.subject-card .subj-icon{font-size:26px; display:block; margin-bottom:6px;}
+.subject-card .subj-title{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:#fff;}
+.subject-card .subj-desc{font-size:11px; color:#9FA3D6; margin-top:3px; line-height:1.3;}
+
+.diff-row{display:flex; gap:8px; justify-content:center; margin-bottom:22px; flex-wrap:wrap;}
+.diff-btn{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  color:#B7B9E0;
+  font-family:'Baloo 2',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  padding:8px 18px;
+  border-radius:999px;
+  cursor:pointer;
+}
+.diff-btn:hover:not(.active){background:rgba(255,255,255,0.1);}
+.diff-btn.active{
+  background:linear-gradient(90deg,var(--coral),var(--gold));
+  color:var(--ink);
+  border-color:transparent;
+}
+
+.meta-row{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:10px; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:13px;
+}
+.pill{
+  background:rgba(255,255,255,0.06); padding:6px 12px; border-radius:999px;
+  display:flex; align-items:center; gap:6px;
+}
+.pill.score{color:var(--gold);}
+.pill.timer{color:var(--coral);}
+.pill.streak{color:var(--teal);}
+
+.deck-info{font-size:12px; color:#9FA3D6; margin-bottom:12px; font-weight:700; letter-spacing:0.3px;}
+
+.qnum{font-size:13px; color:#9FA3D6; font-weight:700; margin-bottom:8px; letter-spacing:0.5px;}
+.qtext{
+  font-family:'Baloo 2',sans-serif; font-size:21px; font-weight:700;
+  line-height:1.4; margin-bottom:22px; color:#fff; min-height:60px;
+}
+
+.answers{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.ans-btn{
+  display:flex; align-items:center; gap:10px; padding:16px 14px;
+  border:none; border-radius:14px; font-family:'Nunito',sans-serif;
+  font-size:16px; font-weight:700; color:#fff; cursor:pointer; text-align:left;
+  transition:transform 0.12s ease, filter 0.12s ease;
+}
+.ans-btn:hover:not(:disabled){transform:translateY(-2px); filter:brightness(1.08);}
+.ans-btn:active:not(:disabled){transform:translateY(0px) scale(0.98);}
+.ans-btn:disabled{cursor:default;}
+.ans-btn .shape{width:18px; height:18px; flex-shrink:0; display:inline-block;}
+.a0{background:var(--coral);}
+.a1{background:var(--blue);}
+.a2{background:var(--gold); color:var(--ink);}
+.a3{background:var(--teal); color:var(--ink);}
+.ans-btn.correct{background:#3CC77B !important; color:#fff !important;}
+.ans-btn.wrong{background:#3A3F72 !important; opacity:0.5;}
+.ans-btn.dim{opacity:0.35;}
+
+.feedback{
+  text-align:center; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px;
+  margin-top:16px; min-height:22px; color:var(--gold);
+}
+
+.next-btn{
+  display:block; margin:18px auto 0; background:var(--purple); color:#fff;
+  border:none; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px;
+  padding:12px 32px; border-radius:999px; cursor:pointer; visibility:hidden;
+}
+.next-btn.show{visibility:visible;}
+.next-btn:hover{background:var(--purple-dark);}
+
+.center-card{text-align:center; padding:30px 22px;}
+.center-card .big-icon{font-size:46px; margin-bottom:8px;}
+.center-card h2{font-family:'Baloo 2',sans-serif; font-size:21px; margin:0 0 8px;}
+.center-card p{color:#B7B9E0; font-size:13px; margin:0 0 18px; line-height:1.6;}
+
+.deck-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:left;}
+.deck-card{
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px; padding:16px; cursor:pointer;
+  transition:transform 0.12s ease, background 0.12s ease;
+}
+.deck-card:hover{transform:translateY(-3px); background:rgba(255,255,255,0.09);}
+.deck-card .deck-icon{font-size:26px; margin-bottom:8px; display:block;}
+.deck-card .deck-title{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:#fff; margin-bottom:4px;}
+.deck-card .deck-desc{font-size:12px; color:#9FA3D6; line-height:1.4;}
+.deck-card.featured{border-color:rgba(255,201,60,0.5); background:rgba(255,201,60,0.08);}
+
+.result-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+.start-btn{
+  background:linear-gradient(90deg,var(--coral),var(--gold)); color:var(--ink); border:none;
+  font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px;
+  padding:13px 28px; border-radius:999px; cursor:pointer;
+}
+.start-btn:hover{filter:brightness(1.05);}
+.ghost-btn{
+  background:transparent; color:var(--cream); border:1px solid rgba(255,255,255,0.25);
+  font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px;
+  padding:13px 26px; border-radius:999px; cursor:pointer;
+}
+.ghost-btn:hover{background:rgba(255,255,255,0.08);}
+
+.result-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;}
+.stat{background:rgba(255,255,255,0.05); border-radius:14px; padding:16px;}
+.stat .num{font-family:'Baloo 2',sans-serif; font-size:26px; font-weight:800; color:var(--gold);}
+.stat .lbl{font-size:12px; color:#9FA3D6; font-weight:700; margin-top:2px;}
+
+.hidden{display:none !important;}
+
+@media (max-width:420px){
+  .answers{grid-template-columns:1fr;}
+  .qtext{font-size:19px;}
+  .deck-grid{grid-template-columns:1fr;}
+  .subject-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<div class="wrap">
+  <h1 class="game-title">Đấu Trường Học Tập</h1>
+  <p class="game-sub">Toán · Tiếng Anh · Tiếng Việt · Lớp 4 · Du hành cùng chú phi hành gia nhỏ</p>
+
+  <div class="track-wrap" id="trackWrap">
+    <div class="track-line"><div class="track-fill" id="trackFill"></div></div>
+    <div class="rocket" id="rocket">🚀</div>
+  </div>
+
+  <!-- START SCREEN: subject + difficulty + deck -->
+  <div class="card" id="startScreen">
+    <div class="section-label">1. Chọn môn học</div>
+    <div class="subject-grid" id="subjectGrid"></div>
+
+    <div class="section-label">2. Chọn độ khó</div>
+    <div class="diff-row" id="diffRow">
+      <button class="diff-btn" data-diff="easy" onclick="setDifficulty('easy')">🟢 Dễ</button>
+      <button class="diff-btn active" data-diff="medium" onclick="setDifficulty('medium')">🟡 Vừa</button>
+      <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">🔴 Khó</button>
+    </div>
+
+    <div class="section-label">3. Chọn bộ đề rồi bắt đầu bay!</div>
+    <div class="deck-grid" id="deckGrid"></div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="card hidden" id="quizScreen">
+    <div class="meta-row">
+      <div class="pill score">⭐ <span id="scoreVal">0</span> điểm</div>
+      <div class="pill timer">⏱ <span id="timerVal">60</span>s</div>
+      <div class="pill streak">🔥 <span id="streakVal">0</span></div>
+    </div>
+    <div class="deck-info" id="deckInfo"></div>
+    <div class="qnum" id="qNum">CÂU 1/30</div>
+    <div class="qtext" id="qText"></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Câu tiếp theo →</button>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="card center-card hidden" id="resultScreen">
+    <div class="big-icon" id="resultIcon">🏆</div>
+    <h2 id="resultTitle">Hạ cánh thành công!</h2>
+    <p id="resultSub">Xem lại kết quả của em bên dưới.</p>
+    <div class="result-grid">
+      <div class="stat"><div class="num" id="finalScore">0</div><div class="lbl">Điểm số</div></div>
+      <div class="stat"><div class="num" id="finalCorrect">0/30</div><div class="lbl">Câu đúng</div></div>
+    </div>
+    <div class="result-actions">
+      <button class="start-btn" onclick="replaySameSet()">Chơi lại bộ này</button>
+      <button class="ghost-btn" onclick="showDeckMenu()">Chọn bộ đề khác</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ helpers ============ */
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function fmt(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function buildMC(correctVal, pool, formatter){
+  formatter = formatter || (v=>v);
+  let candidates = pool.filter(v=>v!==correctVal);
+  candidates = [...new Set(candidates)];
+  shuffleArr(candidates);
+  let vals = [correctVal, ...candidates.slice(0,3)];
+  vals = [...new Set(vals)];
+  let idx=3;
+  while(vals.length<4 && idx<candidates.length){ vals.push(candidates[idx]); idx++; }
+  vals = vals.slice(0,4);
+  shuffleArr(vals);
+  return {opts: vals.map(formatter), correct: vals.indexOf(correctVal)};
+}
+function makeMC(correctVal, distractors, formatter){
+  formatter = formatter || (v=>fmt(v));
+  let vals=[correctVal, ...distractors].filter(v=>v>=0);
+  vals=[...new Set(vals)];
+  let guard=0;
+  while(vals.length<4 && guard<20){
+    guard++;
+    const d=correctVal+randInt(-15,15)*(randInt(1,3)||1);
+    if(d>=0 && !vals.includes(d)) vals.push(d);
+  }
+  vals=vals.slice(0,4);
+  for(let i=vals.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [vals[i],vals[j]]=[vals[j],vals[i]];
+  }
+  return {opts: vals.map(formatter), correct: vals.indexOf(correctVal)};
+}
+
+/* ============ shared difficulty config ============ */
+const DIFFICULTY_CONFIG={
+  easy:{
+    dir:'forward',
+    congtru:{min:100, max:4999}, nhanA:[10,99], nhanB:[2,9],
+    chiaD:[2,9], chiaQ:[5,50], chiaRem:0.1, phanSoMaxDenom:6,
+    hinhMin:3, hinhMax:10, doLuongVal:[1,5],
+    loivanSmall:[5,30], loivanBig:[5,20], tbNums:[5,20],
+    daySoStart:[1,10], daySoStep:[2,5],
+    numMax:9, grammarFns:null
+  },
+  medium:{
+    dir:'random',
+    congtru:{min:1000, max:89999}, nhanA:[100,999], nhanB:[2,9],
+    chiaD:[2,9], chiaQ:[10,999], chiaRem:0.4, phanSoMaxDenom:10,
+    hinhMin:5, hinhMax:20, doLuongVal:[2,9],
+    loivanSmall:[10,80], loivanBig:[5,40], tbNums:[5,50],
+    daySoStart:[1,20], daySoStep:[2,10],
+    numMax:14, grammarFns:null
+  },
+  hard:{
+    dir:'reverse',
+    congtru:{min:10000, max:999999}, nhanA:[100,9999], nhanB:[2,99],
+    chiaD:[3,12], chiaQ:[100,9999], chiaRem:0.6, phanSoMaxDenom:15,
+    hinhMin:10, hinhMax:60, doLuongVal:[5,99],
+    loivanSmall:[50,300], loivanBig:[20,150], tbNums:[20,200],
+    daySoStart:[10,100], daySoStep:[5,30],
+    numMax:19, grammarFns:null
+  }
+};
+const DIFF_LABEL={easy:'Dễ', medium:'Vừa', hard:'Khó'};
+
+/* ================================================================== */
+/* ========================== MÔN TOÁN ============================= */
+/* ================================================================== */
+function genCongTru(cfg){
+  const {min,max}=cfg.congtru;
+  const op=Math.random()<0.5;
+  let a,b,ans,qtext;
+  if(op){
+    a=randInt(min,max); b=randInt(min,max); ans=a+b;
+    qtext=`${fmt(a)} + ${fmt(b)} = ?`;
+  } else {
+    a=randInt(min+1,max); b=randInt(min,a-1); ans=a-b;
+    qtext=`${fmt(a)} − ${fmt(b)} = ?`;
+  }
+  const mc=makeMC(ans,[ans+randInt(1,50), ans-randInt(1,50), ans+randInt(51,200)]);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Cộng trừ"};
+}
+function genNhan(cfg){
+  const a=randInt(cfg.nhanA[0],cfg.nhanA[1]);
+  const b=randInt(cfg.nhanB[0],cfg.nhanB[1]);
+  const ans=a*b;
+  const qtext=`${fmt(a)} × ${fmt(b)} = ?`;
+  const mc=makeMC(ans,[ans+b, ans-b, ans+a]);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Phép nhân"};
+}
+function genChia(cfg){
+  const d=randInt(cfg.chiaD[0],cfg.chiaD[1]);
+  const q=randInt(cfg.chiaQ[0],cfg.chiaQ[1]);
+  const hasR=Math.random()<cfg.chiaRem;
+  const r=hasR?randInt(1,d-1):0;
+  const dividend=d*q+r;
+  const qtext=`${fmt(dividend)} : ${d} = ?`;
+  const correctText=r===0?`${fmt(q)}`:`${fmt(q)} dư ${r}`;
+  let vals=[correctText,
+    `${fmt(q+1)}${r?(' dư '+r):''}`,
+    `${fmt(Math.max(q-1,0))}${r?(' dư '+r):''}`,
+    r===0?`${fmt(q)} dư ${randInt(1,d-1)}`:`${fmt(q)}`
+  ];
+  vals=[...new Set(vals)];
+  while(vals.length<4) vals.push(`${fmt(q+randInt(2,5))}`);
+  vals=vals.slice(0,4);
+  if(!vals.includes(correctText)) vals[0]=correctText;
+  for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [vals[i],vals[j]]=[vals[j],vals[i]];}
+  return {q:qtext, opts:vals, correct:vals.indexOf(correctText), topic:"Phép chia"};
+}
+function genPhanSo(cfg){
+  const maxD=Math.max(cfg.phanSoMaxDenom,6);
+  const type=randInt(1,3);
+  if(type===1){
+    const n1=randInt(1,maxD-1), d1=randInt(n1+1,maxD);
+    const n2=randInt(1,maxD-1), d2=randInt(n2+1,maxD);
+    if(Math.abs(n1/d1 - n2/d2) < 0.001) return genPhanSo(cfg);
+    const bigger=(n1/d1>n2/d2)?`${n1}/${d1}`:`${n2}/${d2}`;
+    const smaller=(n1/d1>n2/d2)?`${n2}/${d2}`:`${n1}/${d1}`;
+    const qtext=`Phân số nào lớn hơn: ${n1}/${d1} hay ${n2}/${d2}?`;
+    let vals=[bigger, smaller, "Bằng nhau", "Không so sánh được"];
+    for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [vals[i],vals[j]]=[vals[j],vals[i]];}
+    return {q:qtext, opts:vals, correct:vals.indexOf(bigger), topic:"Phân số"};
+  } else if(type===2){
+    const g=randInt(2,6);
+    const n=randInt(1,Math.max(maxD-4,1)), d=randInt(n+1,Math.max(maxD-1,n+2));
+    const N=n*g, D=d*g;
+    const qtext=`Rút gọn phân số ${N}/${D} ta được?`;
+    const correctVal=`${n}/${d}`;
+    let vals=[correctVal, `${n+1}/${d}`, `${n}/${d+1}`, `${N}/${Math.max(D-g,1)}`];
+    vals=[...new Set(vals)];
+    while(vals.length<4) vals.push(`${n}/${d+2}`);
+    vals=vals.slice(0,4);
+    for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [vals[i],vals[j]]=[vals[j],vals[i]];}
+    return {q:qtext, opts:vals, correct:vals.indexOf(correctVal), topic:"Phân số"};
+  } else {
+    const d=randInt(4,maxD);
+    let n1=randInt(1,d-2), n2=randInt(1,Math.max(d-1-n1,1));
+    const isAdd=Math.random()<0.5;
+    let ans,qtext;
+    if(isAdd){ ans=n1+n2; qtext=`${n1}/${d} + ${n2}/${d} = ?`; }
+    else { if(n1<n2)[n1,n2]=[n2,n1]; ans=n1-n2; qtext=`${n1}/${d} − ${n2}/${d} = ?`; }
+    const correctVal=`${ans}/${d}`;
+    let vals=[correctVal, `${ans+1}/${d}`, `${Math.max(ans-1,0)}/${d}`, `${ans}/${d+1}`];
+    vals=[...new Set(vals)];
+    while(vals.length<4) vals.push(`${ans+2}/${d}`);
+    vals=vals.slice(0,4);
+    for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [vals[i],vals[j]]=[vals[j],vals[i]];}
+    return {q:qtext, opts:vals, correct:vals.indexOf(correctVal), topic:"Phân số"};
+  }
+}
+function genHinhHoc(cfg){
+  const min=cfg.hinhMin, max=cfg.hinhMax;
+  const type=randInt(1,3);
+  if(type===1){
+    const l=randInt(min+2,max), w=randInt(min,l-1);
+    const ans=(l+w)*2;
+    const qtext=`Hình chữ nhật dài ${l}cm, rộng ${w}cm. Chu vi là?`;
+    const mc=makeMC(ans,[ans+2,ans-2,l*w], v=>`${fmt(v)}cm`);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Hình học"};
+  } else if(type===2){
+    const s=randInt(min,max);
+    const ans=s*s;
+    const qtext=`Hình vuông cạnh ${s}cm. Diện tích là?`;
+    const mc=makeMC(ans,[s*4, ans+s, Math.max(ans-s,1)], v=>`${fmt(v)}cm²`);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Hình học"};
+  } else {
+    const l=randInt(min+2,max), w=randInt(min,l-1);
+    const ans=l*w;
+    const qtext=`Hình chữ nhật dài ${l}cm, rộng ${w}cm. Diện tích là?`;
+    const mc=makeMC(ans,[(l+w)*2, ans+w, Math.max(ans-w,1)], v=>`${fmt(v)}cm²`);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Hình học"};
+  }
+}
+const CONVERSIONS=[
+  {u1:'km',u2:'m',mult:1000},{u1:'m',u2:'cm',mult:100},
+  {u1:'kg',u2:'g',mult:1000},{u1:'tấn',u2:'kg',mult:1000},
+  {u1:'giờ',u2:'phút',mult:60},{u1:'phút',u2:'giây',mult:60},
+  {u1:'m²',u2:'cm²',mult:10000}
+];
+function genDoLuong(cfg){
+  const c=CONVERSIONS[randInt(0,CONVERSIONS.length-1)];
+  const val=randInt(cfg.doLuongVal[0],cfg.doLuongVal[1]);
+  const ans=val*c.mult;
+  const qtext=`${val}${c.u1} = ? ${c.u2}`;
+  const mc=makeMC(ans,[ans+c.mult, Math.max(ans-c.mult,1), Math.round(ans/2)]);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Đo lường"};
+}
+function genLoiVan(cfg){
+  const type=randInt(1,3);
+  if(type===1){
+    const small=randInt(cfg.loivanSmall[0],cfg.loivanSmall[1]);
+    const big=small+randInt(cfg.loivanBig[0],cfg.loivanBig[1]);
+    const tong=big+small, hieu=big-small;
+    const askBig=Math.random()<0.5;
+    const ans=askBig?big:small;
+    const qtext=`Tổng hai số là ${fmt(tong)}, hiệu là ${fmt(hieu)}. Số ${askBig?'lớn':'bé'} là?`;
+    const mc=makeMC(ans,[ans+2,ans-2,Math.max(tong-ans,0)]);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Toán có lời văn"};
+  } else if(type===2){
+    const n=randInt(3,5);
+    let nums=[], sum=0;
+    for(let i=0;i<n;i++){ const v=randInt(cfg.tbNums[0],cfg.tbNums[1]); nums.push(v); sum+=v; }
+    if(sum%n!==0){ nums[n-1]+=(n-(sum%n)); sum=nums.reduce((a,b)=>a+b,0); }
+    const ans=sum/n;
+    const qtext=`Trung bình cộng của ${nums.map(fmt).join(', ')} là?`;
+    const mc=makeMC(ans,[ans+1,ans-1,ans+2]);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Trung bình cộng"};
+  } else {
+    const start=randInt(cfg.daySoStart[0],cfg.daySoStart[1]);
+    const step=randInt(cfg.daySoStep[0],cfg.daySoStep[1]);
+    const arr=[start, start+step, start+2*step, start+3*step];
+    const ans=start+4*step;
+    const qtext=`Dãy số: ${arr.map(fmt).join(', ')}, ? Số tiếp theo là?`;
+    const mc=makeMC(ans,[ans+step-1, Math.max(ans-step+1,0), ans+step+1]);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Dãy số"};
+  }
+}
+const ALL_GENS_MATH=[genCongTru, genNhan, genChia, genPhanSo, genHinhHoc, genDoLuong, genLoiVan];
+const MATH_SETS=[
+  {id:1, title:"Bộ đề 1", icon:"➕", desc:"Cộng, trừ số có nhiều chữ số", gens:[genCongTru]},
+  {id:2, title:"Bộ đề 2", icon:"✖️", desc:"Phép nhân", gens:[genNhan]},
+  {id:3, title:"Bộ đề 3", icon:"➗", desc:"Phép chia hết và có dư", gens:[genChia]},
+  {id:4, title:"Bộ đề 4", icon:"🍕", desc:"Phân số: so sánh, rút gọn, cộng trừ", gens:[genPhanSo]},
+  {id:5, title:"Bộ đề 5", icon:"📐", desc:"Hình học: chu vi, diện tích", gens:[genHinhHoc]},
+  {id:6, title:"Bộ đề 6", icon:"⏱️", desc:"Đo lường: đổi đơn vị", gens:[genDoLuong]},
+  {id:7, title:"Bộ đề 7", icon:"🧮", desc:"Toán có lời văn, TB cộng, dãy số", gens:[genLoiVan]},
+  {id:8, title:"Bộ đề 8", icon:"🌌", desc:"Tổng hợp tất cả dạng Toán", gens:ALL_GENS_MATH, featured:true}
+];
+
+/* ================================================================== */
+/* ========================= MÔN TIẾNG ANH ========================= */
+/* ================================================================== */
+const GREETINGS=[
+  {en:'Hello',vi:'Xin chào'},{en:'Goodbye',vi:'Tạm biệt'},{en:'Thank you',vi:'Cảm ơn'},
+  {en:'Sorry',vi:'Xin lỗi'},{en:'Please',vi:'Làm ơn'},{en:'Good morning',vi:'Chào buổi sáng'},
+  {en:'Good afternoon',vi:'Chào buổi chiều'},{en:'Good evening',vi:'Chào buổi tối'},
+  {en:'Good night',vi:'Chúc ngủ ngon'},{en:'Excuse me',vi:'Xin lỗi làm phiền'},
+  {en:'Nice to meet you',vi:'Rất vui được gặp bạn'},{en:'See you later',vi:'Hẹn gặp lại'},
+  {en:'Welcome',vi:'Chào mừng'},{en:'Yes',vi:'Vâng, có'},{en:'No',vi:'Không'},
+  {en:'Happy birthday',vi:'Chúc mừng sinh nhật'},{en:'What is your name?',vi:'Bạn tên là gì?'},
+  {en:'How old are you?',vi:'Bạn bao nhiêu tuổi?'},{en:'Where are you from?',vi:'Bạn đến từ đâu?'},
+  {en:'I am fine, thank you',vi:'Tôi khỏe, cảm ơn bạn'},{en:'Have a nice day',vi:'Chúc bạn một ngày tốt lành'},
+  {en:'Take care',vi:'Bảo trọng nhé'},{en:'Congratulations',vi:'Xin chúc mừng'},
+  {en:'Best wishes',vi:'Lời chúc tốt đẹp nhất'},{en:'How are you?',vi:'Bạn khỏe không?'},
+  {en:'I am from Vietnam',vi:'Tôi đến từ Việt Nam'},{en:'What time is it?',vi:'Bây giờ là mấy giờ?'},
+  {en:'See you tomorrow',vi:'Hẹn gặp lại vào ngày mai'},{en:'Good luck',vi:'Chúc may mắn'},
+  {en:'Of course',vi:'Tất nhiên rồi'},{en:'I am sorry',vi:'Tôi xin lỗi'},
+  {en:'How do you do?',vi:'Rất hân hạnh được gặp bạn'},{en:'You are welcome',vi:'Không có gì'},
+  {en:'Can you help me?',vi:'Bạn có thể giúp tôi không?'},{en:'I don\u2019t understand',vi:'Tôi không hiểu'}
+];
+const ANIMALS=[
+  {en:'cat',vi:'con mèo'},{en:'dog',vi:'con chó'},{en:'bird',vi:'con chim'},{en:'fish',vi:'con cá'},
+  {en:'elephant',vi:'con voi'},{en:'tiger',vi:'con hổ'},{en:'lion',vi:'con sư tử'},{en:'monkey',vi:'con khỉ'},
+  {en:'rabbit',vi:'con thỏ'},{en:'horse',vi:'con ngựa'},{en:'cow',vi:'con bò'},{en:'pig',vi:'con lợn'},
+  {en:'chicken',vi:'con gà'},{en:'duck',vi:'con vịt'},{en:'bear',vi:'con gấu'},{en:'snake',vi:'con rắn'},
+  {en:'frog',vi:'con ếch'},{en:'sheep',vi:'con cừu'},{en:'goat',vi:'con dê'},{en:'butterfly',vi:'con bướm'},
+  {en:'bee',vi:'con ong'},{en:'spider',vi:'con nhện'},{en:'turtle',vi:'con rùa'},{en:'crab',vi:'con cua'},
+  {en:'goose',vi:'con ngỗng'},{en:'owl',vi:'con cú'},{en:'zebra',vi:'con ngựa vằn'},{en:'giraffe',vi:'con hươu cao cổ'},
+  {en:'squirrel',vi:'con sóc'},{en:'panda',vi:'gấu trúc'},{en:'mouse',vi:'con chuột'},{en:'parrot',vi:'con vẹt'},
+  {en:'dolphin',vi:'con cá heo'},{en:'shark',vi:'con cá mập'},{en:'camel',vi:'con lạc đà'}
+];
+const SCHOOL_OBJECTS=[
+  {en:'book',vi:'quyển sách'},{en:'pen',vi:'cây bút mực'},{en:'pencil',vi:'cây bút chì'},
+  {en:'ruler',vi:'cây thước'},{en:'eraser',vi:'cục tẩy'},{en:'bag',vi:'cái cặp'},
+  {en:'chair',vi:'cái ghế'},{en:'table',vi:'cái bàn'},{en:'board',vi:'bảng'},
+  {en:'notebook',vi:'quyển vở'},{en:'crayon',vi:'bút sáp màu'},{en:'glue',vi:'keo dán'},
+  {en:'scissors',vi:'cây kéo'},{en:'clock',vi:'đồng hồ'},{en:'window',vi:'cửa sổ'},
+  {en:'door',vi:'cửa ra vào'},{en:'lamp',vi:'cái đèn'},{en:'computer',vi:'máy tính'},
+  {en:'map',vi:'bản đồ'},{en:'calendar',vi:'tờ lịch'},{en:'flag',vi:'lá cờ'},{en:'desk',vi:'bàn học'},
+  {en:'textbook',vi:'sách giáo khoa'},{en:'backpack',vi:'ba lô'},{en:'marker',vi:'bút dạ'},
+  {en:'globe',vi:'quả địa cầu'},{en:'whiteboard',vi:'bảng trắng'},{en:'blackboard',vi:'bảng đen'},
+  {en:'library',vi:'thư viện'},{en:'playground',vi:'sân chơi'},{en:'stapler',vi:'cái bấm kim'},
+  {en:'sharpener',vi:'cái gọt bút chì'},{en:'bell',vi:'cái chuông'},{en:'bookshelf',vi:'kệ sách'},
+  {en:'poster',vi:'tờ áp phích'}
+];
+const FAMILY_JOBS=[
+  {en:'mother',vi:'mẹ'},{en:'father',vi:'bố'},{en:'sister',vi:'chị hoặc em gái'},
+  {en:'brother',vi:'anh hoặc em trai'},{en:'grandmother',vi:'bà'},{en:'grandfather',vi:'ông'},
+  {en:'aunt',vi:'cô hoặc dì'},{en:'uncle',vi:'chú hoặc bác'},{en:'baby',vi:'em bé'},
+  {en:'parents',vi:'bố mẹ'},{en:'teacher',vi:'giáo viên'},{en:'doctor',vi:'bác sĩ'},
+  {en:'nurse',vi:'y tá'},{en:'farmer',vi:'nông dân'},{en:'driver',vi:'tài xế'},
+  {en:'cook',vi:'đầu bếp'},{en:'engineer',vi:'kỹ sư'},{en:'student',vi:'học sinh'},
+  {en:'singer',vi:'ca sĩ'},{en:'pilot',vi:'phi công'},{en:'son',vi:'con trai'},
+  {en:'daughter',vi:'con gái'},{en:'husband',vi:'chồng'},{en:'wife',vi:'vợ'},
+  {en:'niece',vi:'cháu gái'},{en:'nephew',vi:'cháu trai'},{en:'neighbor',vi:'hàng xóm'},
+  {en:'friend',vi:'bạn'},{en:'artist',vi:'nghệ sĩ'},{en:'dentist',vi:'nha sĩ'},
+  {en:'grandson',vi:'cháu trai'},{en:'granddaughter',vi:'cháu gái'},{en:'twin',vi:'anh em sinh đôi'},
+  {en:'lawyer',vi:'luật sư'},{en:'scientist',vi:'nhà khoa học'}
+];
+const COLORS=[
+  {en:'red',vi:'màu đỏ'},{en:'blue',vi:'màu xanh dương'},{en:'green',vi:'màu xanh lá'},
+  {en:'yellow',vi:'màu vàng'},{en:'orange',vi:'màu cam'},{en:'purple',vi:'màu tím'},
+  {en:'pink',vi:'màu hồng'},{en:'black',vi:'màu đen'},{en:'white',vi:'màu trắng'},
+  {en:'brown',vi:'màu nâu'},{en:'grey',vi:'màu xám'},{en:'gold',vi:'màu vàng kim'},
+  {en:'silver',vi:'màu bạc'},{en:'light blue',vi:'màu xanh nhạt'},{en:'dark blue',vi:'màu xanh đậm'}
+];
+const NUMBERS_WORDS=[
+  {en:'one',n:1},{en:'two',n:2},{en:'three',n:3},{en:'four',n:4},{en:'five',n:5},
+  {en:'six',n:6},{en:'seven',n:7},{en:'eight',n:8},{en:'nine',n:9},{en:'ten',n:10},
+  {en:'eleven',n:11},{en:'twelve',n:12},{en:'thirteen',n:13},{en:'fourteen',n:14},{en:'fifteen',n:15},
+  {en:'sixteen',n:16},{en:'seventeen',n:17},{en:'eighteen',n:18},{en:'nineteen',n:19},{en:'twenty',n:20}
+];
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_MONTH_BANK=[
+  {en:'Monday',vi:'Thứ Hai'},{en:'Tuesday',vi:'Thứ Ba'},{en:'Wednesday',vi:'Thứ Tư'},
+  {en:'Thursday',vi:'Thứ Năm'},{en:'Friday',vi:'Thứ Sáu'},{en:'Saturday',vi:'Thứ Bảy'},
+  {en:'Sunday',vi:'Chủ Nhật'},{en:'January',vi:'Tháng Một'},{en:'February',vi:'Tháng Hai'},
+  {en:'March',vi:'Tháng Ba'},{en:'April',vi:'Tháng Tư'},{en:'May',vi:'Tháng Năm'},
+  {en:'June',vi:'Tháng Sáu'},{en:'July',vi:'Tháng Bảy'},{en:'August',vi:'Tháng Tám'},
+  {en:'September',vi:'Tháng Chín'},{en:'October',vi:'Tháng Mười'},{en:'November',vi:'Tháng Mười Một'},
+  {en:'December',vi:'Tháng Mười Hai'}
+];
+
+function genTranslate(bank, topic, cfg){
+  const dir = cfg.dir==='random' ? (Math.random()<0.5?'forward':'reverse') : cfg.dir;
+  const item = bank[randInt(0,bank.length-1)];
+  let qtext, correctVal, pool;
+  if(dir==='reverse'){
+    qtext=`Từ "${item.en}" có nghĩa là gì?`;
+    correctVal=item.vi;
+    pool=bank.filter(x=>x!==item).map(x=>x.vi);
+  } else {
+    qtext=`"${item.vi}" trong tiếng Anh là gì?`;
+    correctVal=item.en;
+    pool=bank.filter(x=>x!==item).map(x=>x.en);
+  }
+  const mc=buildMC(correctVal, pool);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic};
+}
+function genNumbers(cfg){
+  const subset=NUMBERS_WORDS.slice(0, cfg.numMax+1);
+  const item=subset[randInt(0,subset.length-1)];
+  const type=randInt(1,2);
+  if(type===1){
+    const qtext=`Số ${item.n} viết bằng tiếng Anh là gì?`;
+    const pool=subset.filter(x=>x!==item).map(x=>x.en);
+    const mc=buildMC(item.en, pool);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Số đếm"};
+  } else {
+    const qtext=`"${item.en}" là số mấy?`;
+    const pool=subset.filter(x=>x!==item).map(x=>x.n.toString());
+    const mc=buildMC(item.n.toString(), pool);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Số đếm"};
+  }
+}
+function genDaysMonths(cfg){
+  const type = randInt(1,4);
+  if(type===1){
+    const idx=randInt(0,5);
+    const day=DAYS[idx], next=DAYS[idx+1];
+    const qtext=`Ngày nào đứng ngay sau ${day}?`;
+    const mc=buildMC(next, DAYS.filter(d=>d!==next));
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngày & Tháng"};
+  } else if(type===2){
+    const idx=randInt(1,6);
+    const day=DAYS[idx], prev=DAYS[idx-1];
+    const qtext=`Ngày nào đứng ngay trước ${day}?`;
+    const mc=buildMC(prev, DAYS.filter(d=>d!==prev));
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngày & Tháng"};
+  } else if(type===3){
+    const idx=randInt(0,10);
+    const month=MONTHS[idx], next=MONTHS[idx+1];
+    const qtext=`Tháng nào đứng sau ${month}?`;
+    const mc=buildMC(next, MONTHS.filter(m=>m!==next));
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngày & Tháng"};
+  } else {
+    const idx=randInt(1,11);
+    const month=MONTHS[idx], prev=MONTHS[idx-1];
+    const qtext=`Tháng nào đứng trước ${month}?`;
+    const mc=buildMC(prev, MONTHS.filter(m=>m!==prev));
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngày & Tháng"};
+  }
+}
+const IRREGULAR_PLURALS={
+  child:'children', foot:'feet', tooth:'teeth', man:'men', woman:'women',
+  mouse:'mice', person:'people', leaf:'leaves', knife:'knives', wife:'wives',
+  shelf:'shelves', bookshelf:'bookshelves', wolf:'wolves', half:'halves',
+  fish:'fish', sheep:'sheep', goose:'geese'
+};
+function pluralize(word){
+  if(IRREGULAR_PLURALS[word]) return IRREGULAR_PLURALS[word];
+  if(/[^aeiou]y$/i.test(word)) return word.slice(0,-1)+'ies';
+  if(/(s|x|z|ch|sh)$/i.test(word)) return word+'es';
+  return word+'s';
+}
+const SUBJECTS_EN=[
+  {text:'I', form:'am'},{text:'You', form:'are'},{text:'He', form:'is'},{text:'She', form:'is'},
+  {text:'It', form:'is'},{text:'We', form:'are'},{text:'They', form:'are'},
+  {text:'My friend', form:'is'},{text:'My parents', form:'are'},{text:'The cat', form:'is'},
+  {text:'My teacher', form:'is'},{text:'My brothers', form:'are'}
+];
+function genToBe(){
+  const subj=SUBJECTS_EN[randInt(0,SUBJECTS_EN.length-1)];
+  const adj=['happy','hungry','tall','friendly','busy','tired','kind','funny'][randInt(0,7)];
+  const qtext=`${subj.text} ___ ${adj}.`;
+  const pool=['am','is','are','be'].filter(f=>f!==subj.form);
+  const mc=buildMC(subj.form, pool);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngữ pháp Anh"};
+}
+function genPluralQuiz(){
+  const bank=[...ANIMALS,...SCHOOL_OBJECTS,...FAMILY_JOBS].filter(x=>!x.en.includes(' '));
+  const item=bank[randInt(0,bank.length-1)];
+  const correctVal=pluralize(item.en);
+  const qtext=`Số nhiều của "${item.en}" là gì?`;
+  let candidates=[item.en, item.en+'s', item.en+'es', item.en+'ies'].filter(v=>v!==correctVal);
+  const mc=buildMC(correctVal, candidates);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngữ pháp Anh"};
+}
+function numToWord(n){ const f=NUMBERS_WORDS.find(x=>x.n===n); return f?f.en:n.toString(); }
+function genThereIs(){
+  const bank=[...ANIMALS,...SCHOOL_OBJECTS].filter(x=>!x.en.includes(' '));
+  const item=bank[randInt(0,bank.length-1)];
+  const isPlural=Math.random()<0.5;
+  if(isPlural){
+    const count=randInt(2,5);
+    const noun=pluralize(item.en);
+    const qtext=`There ___ ${numToWord(count)} ${noun} in the picture.`;
+    const mc=buildMC('are', ['is','am','was']);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngữ pháp Anh"};
+  } else {
+    const article=/^[aeiou]/i.test(item.en)?'an':'a';
+    const qtext=`There ___ ${article} ${item.en} in the picture.`;
+    const mc=buildMC('is', ['are','am','was']);
+    return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngữ pháp Anh"};
+  }
+}
+function genThisThese(){
+  const bank=[...SCHOOL_OBJECTS,...ANIMALS].filter(x=>!x.en.includes(' '));
+  const item=bank[randInt(0,bank.length-1)];
+  const isPlural=Math.random()<0.5;
+  const noun=isPlural?pluralize(item.en):item.en;
+  const qtext=`___ ${isPlural?'are':'is'} my ${noun}.`;
+  const correct=isPlural?'These':'This';
+  const mc=buildMC(correct, ['This','These','That','Those'].filter(v=>v!==correct));
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Ngữ pháp Anh"};
+}
+function genGrammarEn(cfg){
+  const fns = cfg.grammarFns;
+  const fn = fns[randInt(0,fns.length-1)];
+  return fn();
+}
+DIFFICULTY_CONFIG.easy.grammarFns=[genToBe];
+DIFFICULTY_CONFIG.medium.grammarFns=[genToBe, genPluralQuiz];
+DIFFICULTY_CONFIG.hard.grammarFns=[genToBe, genPluralQuiz, genThereIs, genThisThese];
+
+const gGreetings=(cfg)=>genTranslate(GREETINGS,"Chào hỏi",cfg);
+const gAnimals=(cfg)=>genTranslate(ANIMALS,"Con vật",cfg);
+const gSchool=(cfg)=>genTranslate(SCHOOL_OBJECTS,"Trường học",cfg);
+const gColors=(cfg)=>genTranslate(COLORS,"Màu sắc",cfg);
+const gFamily=(cfg)=>genTranslate(FAMILY_JOBS,"Gia đình & Nghề nghiệp",cfg);
+const gDaysTranslate=(cfg)=>genTranslate(DAY_MONTH_BANK,"Ngày & Tháng (Anh)",cfg);
+const ALL_GENS_EN=[gGreetings, gAnimals, gSchool, genNumbers, gColors, gFamily, genDaysMonths, gDaysTranslate, genGrammarEn];
+const ENGLISH_SETS=[
+  {id:1, title:"Bộ đề 1", icon:"👋", desc:"Chào hỏi & câu giao tiếp cơ bản", gens:[gGreetings]},
+  {id:2, title:"Bộ đề 2", icon:"🐾", desc:"Từ vựng: Con vật", gens:[gAnimals]},
+  {id:3, title:"Bộ đề 3", icon:"🏫", desc:"Từ vựng: Đồ vật & trường học", gens:[gSchool]},
+  {id:4, title:"Bộ đề 4", icon:"🎨", desc:"Số đếm & màu sắc", gens:[genNumbers, gColors]},
+  {id:5, title:"Bộ đề 5", icon:"👪", desc:"Gia đình & nghề nghiệp", gens:[gFamily]},
+  {id:6, title:"Bộ đề 6", icon:"📅", desc:"Ngày trong tuần & tháng", gens:[genDaysMonths, gDaysTranslate]},
+  {id:7, title:"Bộ đề 7", icon:"📝", desc:"Ngữ pháp: to be, số nhiều, there is/are", gens:[genGrammarEn]},
+  {id:8, title:"Bộ đề 8", icon:"🌟", desc:"Tổng hợp tất cả tiếng Anh", gens:ALL_GENS_EN, featured:true}
+];
+
+/* ================================================================== */
+/* ========================= MÔN TIẾNG VIỆT ========================= */
+/* ================================================================== */
+const NOUNS_VI=['con mèo','cái bàn','học sinh','quyển sách','bông hoa','ngôi nhà','dòng sông','bầu trời','cây bút','chiếc xe','con đường','buổi sáng','tình bạn','mùa xuân','thành phố'];
+const VERBS_VI=['chạy','nhảy','đọc','viết','ăn','uống','ngủ','học','chơi','hát','múa','nấu','quét','tưới','gặt'];
+const ADJECTIVES_VI=['đẹp','xấu','cao','thấp','to','nhỏ','nhanh','chậm','vui','buồn','sạch','bẩn','mạnh','yếu','thông minh'];
+
+function genTuLoai(cfg){
+  const cats=[{name:'danh từ',bank:NOUNS_VI},{name:'động từ',bank:VERBS_VI},{name:'tính từ',bank:ADJECTIVES_VI}];
+  const cat=cats[randInt(0,2)];
+  const word=cat.bank[randInt(0,cat.bank.length-1)];
+  const qtext=`Từ "${word}" thuộc từ loại nào?`;
+  const options=['danh từ','động từ','tính từ','đại từ'];
+  const mc=buildMC(cat.name, options.filter(o=>o!==cat.name));
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Từ loại"};
+}
+
+const SYNONYMS_VI=[
+  {w:'chăm chỉ', syn:'siêng năng'},{w:'vui vẻ', syn:'vui mừng'},{w:'to lớn', syn:'to'},
+  {w:'xinh đẹp', syn:'xinh'},{w:'dũng cảm', syn:'gan dạ'},{w:'thông minh', syn:'sáng dạ'},
+  {w:'nhanh nhẹn', syn:'lanh lợi'},{w:'yên tĩnh', syn:'im lặng'},{w:'buồn bã', syn:'buồn rầu'},
+  {w:'hạnh phúc', syn:'sung sướng'},{w:'mạnh mẽ', syn:'khỏe mạnh'},{w:'tốt bụng', syn:'nhân hậu'},
+  {w:'chăm học', syn:'ham học'},{w:'sạch sẽ', syn:'gọn gàng'},{w:'to tát', syn:'to lớn'},
+  {w:'kiên trì', syn:'bền bỉ'},{w:'hiền lành', syn:'hiền hậu'},{w:'nhanh trí', syn:'lanh trí'},
+  {w:'giản dị', syn:'mộc mạc'},{w:'chân thật', syn:'thật thà'},{w:'rộng rãi', syn:'thoáng đãng'},
+  {w:'quý mến', syn:'yêu mến'},{w:'lo lắng', syn:'lo âu'},{w:'ngoan ngoãn', syn:'nghe lời'},
+  {w:'vất vả', syn:'cực nhọc'},{w:'kỳ diệu', syn:'diệu kỳ'},{w:'trong sáng', syn:'trong trẻo'},
+  {w:'siêng năng', syn:'cần cù'},{w:'giúp đỡ', syn:'hỗ trợ'},{w:'thân thiện', syn:'gần gũi'}
+];
+function genDongNghia(cfg){
+  const item=SYNONYMS_VI[randInt(0,SYNONYMS_VI.length-1)];
+  const dir=cfg.dir==='random' ? (Math.random()<0.5?'forward':'reverse') : cfg.dir;
+  let qtext, correctVal, pool;
+  if(dir==='reverse'){
+    qtext=`Từ "${item.syn}" đồng nghĩa với từ nào sau đây?`;
+    correctVal=item.w;
+    pool=SYNONYMS_VI.filter(x=>x!==item).map(x=>x.w);
+  } else {
+    qtext=`Từ nào đồng nghĩa với từ "${item.w}"?`;
+    correctVal=item.syn;
+    pool=SYNONYMS_VI.filter(x=>x!==item).map(x=>x.syn);
+  }
+  const mc=buildMC(correctVal,pool);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Từ đồng nghĩa"};
+}
+
+const ANTONYMS_VI=[
+  {w:'cao',opp:'thấp'},{w:'to',opp:'nhỏ'},{w:'nhanh',opp:'chậm'},{w:'vui',opp:'buồn'},
+  {w:'đẹp',opp:'xấu'},{w:'mạnh',opp:'yếu'},{w:'sạch',opp:'bẩn'},{w:'nóng',opp:'lạnh'},
+  {w:'sáng',opp:'tối'},{w:'dài',opp:'ngắn'},{w:'rộng',opp:'hẹp'},{w:'giàu',opp:'nghèo'},
+  {w:'chăm chỉ',opp:'lười biếng'},{w:'thật thà',opp:'dối trá'},{w:'dũng cảm',opp:'nhút nhát'},
+  {w:'yên tĩnh',opp:'ồn ào'},{w:'nhanh nhẹn',opp:'chậm chạp'},{w:'mới',opp:'cũ'},
+  {w:'nặng',opp:'nhẹ'},{w:'trước',opp:'sau'},{w:'yêu',opp:'ghét'},{w:'khỏe',opp:'ốm'},
+  {w:'no',opp:'đói'},{w:'thức',opp:'ngủ'},{w:'đầy',opp:'vơi'},{w:'cao thượng',opp:'thấp hèn'},
+  {w:'thắng',opp:'thua'},{w:'sống',opp:'chết'},{w:'trẻ',opp:'già'},{w:'gần',opp:'xa'}
+];
+function genTraiNghia(cfg){
+  const item=ANTONYMS_VI[randInt(0,ANTONYMS_VI.length-1)];
+  const dir=cfg.dir==='random' ? (Math.random()<0.5?'forward':'reverse') : cfg.dir;
+  let qtext, correctVal, pool;
+  if(dir==='reverse'){
+    qtext=`Từ "${item.opp}" trái nghĩa với từ nào sau đây?`;
+    correctVal=item.w;
+    pool=ANTONYMS_VI.filter(x=>x!==item).map(x=>x.w);
+  } else {
+    qtext=`Từ nào trái nghĩa với từ "${item.w}"?`;
+    correctVal=item.opp;
+    pool=ANTONYMS_VI.filter(x=>x!==item).map(x=>x.opp);
+  }
+  const mc=buildMC(correctVal,pool);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Từ trái nghĩa"};
+}
+
+const SENTENCES_VI=[
+  {s:'Bạn Lan đang quét sân.', type:'Ai làm gì?'},{s:'Chú mèo rất đáng yêu.', type:'Ai thế nào?'},
+  {s:'Bố em là bác sĩ.', type:'Ai là gì?'},{s:'Đàn chim đang bay về tổ.', type:'Ai làm gì?'},
+  {s:'Bông hoa hồng rất thơm.', type:'Ai thế nào?'},{s:'Em trai tôi là học sinh lớp 2.', type:'Ai là gì?'},
+  {s:'Các bạn học sinh đang làm bài tập.', type:'Ai làm gì?'},{s:'Bầu trời hôm nay rất trong xanh.', type:'Ai thế nào?'},
+  {s:'Cô giáo em là người rất tận tâm.', type:'Ai là gì?'},{s:'Đàn cá bơi tung tăng dưới hồ.', type:'Ai làm gì?'},
+  {s:'Con đường làng rất sạch sẽ.', type:'Ai thế nào?'},{s:'Ông em là một người nông dân.', type:'Ai là gì?'},
+  {s:'Các em nhỏ đang chơi đá bóng.', type:'Ai làm gì?'},{s:'Ngôi nhà của em rất khang trang.', type:'Ai thế nào?'},
+  {s:'Chị gái tôi là sinh viên đại học.', type:'Ai là gì?'},{s:'Đàn kiến đang tha mồi về tổ.', type:'Ai làm gì?'},
+  {s:'Bức tranh này rất sinh động.', type:'Ai thế nào?'},{s:'Anh trai em là kỹ sư xây dựng.', type:'Ai là gì?'},
+  {s:'Các chú công nhân đang xây nhà.', type:'Ai làm gì?'},{s:'Khu vườn nhà em rất tươi tốt.', type:'Ai thế nào?'},
+  {s:'Chú Ba là người hàng xóm tốt bụng.', type:'Ai là gì?'},{s:'Đàn bướm bay lượn trên cánh đồng.', type:'Ai làm gì?'},
+  {s:'Giọng hát của bạn ấy rất hay.', type:'Ai thế nào?'},{s:'Bà em là một giáo viên về hưu.', type:'Ai là gì?'},
+  {s:'Các bác nông dân đang gặt lúa.', type:'Ai làm gì?'},{s:'Nước hồ trong xanh và mát lành.', type:'Ai thế nào?'},
+  {s:'Đây là chiếc cặp sách mới của em.', type:'Ai là gì?'},{s:'Mẹ đang nấu cơm trong bếp.', type:'Ai làm gì?'},
+  {s:'Con đường đến trường rất quen thuộc.', type:'Ai thế nào?'},{s:'Chiếc bút này là quà sinh nhật của em.', type:'Ai là gì?'}
+];
+function genKieuCau(cfg){
+  const item=SENTENCES_VI[randInt(0,SENTENCES_VI.length-1)];
+  const qtext=`Câu "${item.s}" thuộc kiểu câu nào?`;
+  const allTypes=['Ai làm gì?','Ai thế nào?','Ai là gì?','Câu cảm thán'];
+  const mc=buildMC(item.type, allTypes.filter(t=>t!==item.type));
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Kiểu câu"};
+}
+
+const PUNCT_SENTENCES_VI=[
+  {s:'Hôm nay trời đẹp quá___', ans:'!'},{s:'Bạn có thích đọc sách không___', ans:'?'},
+  {s:'Em đi học lúc 7 giờ sáng___', ans:'.'},{s:'Mẹ ơi, con đói quá___', ans:'!'},
+  {s:'Hôm nay là thứ mấy___', ans:'?'},{s:'Cả lớp đang làm bài kiểm tra___', ans:'.'},
+  {s:'Ôi, đẹp quá___', ans:'!'},{s:'Bạn tên là gì___', ans:'?'},
+  {s:'Chúng em rất yêu quý thầy cô___', ans:'.'},{s:'Trời ơi, muộn giờ học rồi___', ans:'!'},
+  {s:'Bây giờ là mấy giờ rồi___', ans:'?'},{s:'Lớp em có 40 học sinh___', ans:'.'},
+  {s:'Chúng ta cùng nhau giữ gìn vệ sinh trường lớp___', ans:'.'},{s:'Bạn đã làm xong bài tập chưa___', ans:'?'},
+  {s:'A, đẹp quá___', ans:'!'},{s:'Lớp trưởng nhắc nhở các bạn giữ trật tự___', ans:'.'},
+  {s:'Sao bạn lại đến muộn thế___', ans:'?'},{s:'Chao ôi, cảnh đẹp quá___', ans:'!'},
+  {s:'Hôm nay chúng em học môn Toán và Tiếng Việt___', ans:'.'},{s:'Bạn có muốn đi chơi cùng tớ không___', ans:'?'},
+  {s:'Ôi, con mèo dễ thương quá___', ans:'!'},{s:'Thầy giáo giảng bài rất dễ hiểu___', ans:'.'},
+  {s:'Ai là người trực nhật hôm nay___', ans:'?'},{s:'Trời ơi, sắp trễ giờ học rồi___', ans:'!'},
+  {s:'Hôm nay là ngày mấy___', ans:'?'},{s:'Cô giáo khen cả lớp học chăm chỉ___', ans:'.'},
+  {s:'Ôi, bức tranh này đẹp thật___', ans:'!'},{s:'Bạn có thể cho tớ mượn bút không___', ans:'?'},
+  {s:'Cả lớp đứng dậy chào cô giáo___', ans:'.'},{s:'Chao ôi, bài văn hay quá___', ans:'!'}
+];
+function genDauCau(cfg){
+  const item=PUNCT_SENTENCES_VI[randInt(0,PUNCT_SENTENCES_VI.length-1)];
+  const qtext=`Điền dấu câu thích hợp: "${item.s}"`;
+  const mc=buildMC(item.ans, ['.','?','!',','].filter(p=>p!==item.ans));
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Dấu câu"};
+}
+
+const SPELLING_PAIRS_VI=[
+  {correct:'sạch sẽ', wrong:'xạch xẽ'},{correct:'chăm chỉ', wrong:'trăm chỉ'},
+  {correct:'giản dị', wrong:'dản gị'},{correct:'trung thực', wrong:'chung thực'},
+  {correct:'sáng tạo', wrong:'xáng tạo'},{correct:'reo hò', wrong:'gieo hò'},
+  {correct:'lo lắng', wrong:'no lắng'},{correct:'nhút nhát', wrong:'nhúc nhát'},
+  {correct:'xa xôi', wrong:'sa xôi'},{correct:'giữ gìn', wrong:'dữ gìn'},
+  {correct:'trong trẻo', wrong:'chong trẻo'},{correct:'reo vui', wrong:'gieo vui'},
+  {correct:'sản xuất', wrong:'xản xuất'},{correct:'giúp đỡ', wrong:'júp đỡ'},
+  {correct:'nông thôn', wrong:'lông thôn'},{correct:'xinh xắn', wrong:'sinh xắn'},
+  {correct:'chăm sóc', wrong:'trăm sóc'},{correct:'rực rỡ', wrong:'dực rỡ'},
+  {correct:'lung linh', wrong:'nung linh'},{correct:'sung sướng', wrong:'xung sướng'},
+  {correct:'giản đơn', wrong:'dản đơn'},{correct:'trang trọng', wrong:'chang trọng'},
+  {correct:'sáng láng', wrong:'xáng láng'},{correct:'reo mừng', wrong:'gieo mừng'},
+  {correct:'lấp lánh', wrong:'nấp lánh'},{correct:'xào nấu', wrong:'sào nấu'},
+  {correct:'chững chạc', wrong:'trững chạc'},{correct:'giòn giã', wrong:'dòn giã'},
+  {correct:'trầm trồ', wrong:'chầm chồ'},{correct:'lanh lợi', wrong:'nanh lợi'},
+  {correct:'dịu dàng', wrong:'giệu dàng'},{correct:'xôn xao', wrong:'sôn xao'},
+  {correct:'rạng rỡ', wrong:'dạng rỡ'},{correct:'lãng mạn', wrong:'nãng mạn'},
+  {correct:'chân thật', wrong:'trân thật'}
+];
+function genChinhTa(cfg){
+  const item=SPELLING_PAIRS_VI[randInt(0,SPELLING_PAIRS_VI.length-1)];
+  const qtext=`Cách viết nào đúng chính tả (thay cho từ sai "${item.wrong}")?`;
+  const others=SPELLING_PAIRS_VI.filter(x=>x!==item);
+  shuffleArr(others);
+  const pool=[others[0].wrong, others[1].wrong, others[2].correct];
+  const mc=buildMC(item.correct, pool);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Chính tả"};
+}
+
+const IDIOMS_VI=[
+  {idiom:'Uống nước nhớ nguồn', meaning:'Biết ơn người đã giúp đỡ mình'},
+  {idiom:'Ăn quả nhớ kẻ trồng cây', meaning:'Biết ơn người đã tạo ra thành quả'},
+  {idiom:'Có công mài sắt, có ngày nên kim', meaning:'Kiên trì sẽ thành công'},
+  {idiom:'Lá lành đùm lá rách', meaning:'Yêu thương, giúp đỡ người khó khăn hơn mình'},
+  {idiom:'Đi một ngày đàng, học một sàng khôn', meaning:'Đi nhiều nơi sẽ học được nhiều điều bổ ích'},
+  {idiom:'Một cây làm chẳng nên non', meaning:'Đoàn kết mới tạo nên sức mạnh'},
+  {idiom:'Gần mực thì đen, gần đèn thì sáng', meaning:'Môi trường sống ảnh hưởng đến tính cách con người'},
+  {idiom:'Tốt gỗ hơn tốt nước sơn', meaning:'Coi trọng phẩm chất hơn vẻ bề ngoài'},
+  {idiom:'Đói cho sạch, rách cho thơm', meaning:'Dù khó khăn vẫn giữ phẩm chất tốt đẹp'},
+  {idiom:'Học thầy không tày học bạn', meaning:'Học hỏi từ bạn bè cũng rất quý giá'},
+  {idiom:'Thương người như thể thương thân', meaning:'Yêu thương người khác như yêu thương chính mình'},
+  {idiom:'Kính già yêu trẻ', meaning:'Kính trọng người già, yêu thương trẻ nhỏ'},
+  {idiom:'Không thầy đố mày làm nên', meaning:'Đề cao vai trò của người thầy trong việc dạy dỗ'},
+  {idiom:'Chị ngã em nâng', meaning:'Anh chị em phải biết giúp đỡ, che chở nhau'},
+  {idiom:'Bầu ơi thương lấy bí cùng', meaning:'Mọi người trong cùng cộng đồng nên yêu thương, đùm bọc nhau'},
+  {idiom:'Đoàn kết là sức mạnh', meaning:'Nhiều người hợp sức sẽ tạo nên sức mạnh lớn'},
+  {idiom:'Ăn vóc học hay', meaning:'Ăn uống đầy đủ giúp học tập tốt hơn'},
+  {idiom:'Học một biết mười', meaning:'Người thông minh, học nhanh và hiểu sâu rộng'},
+  {idiom:'Cần cù bù thông minh', meaning:'Chăm chỉ có thể bù đắp cho sự thiếu thông minh'},
+  {idiom:'Đi hỏi già, về nhà hỏi trẻ', meaning:'Nên hỏi ý kiến người có kinh nghiệm phù hợp với từng việc'},
+  {idiom:'Muốn sang thì bắc cầu kiều', meaning:'Muốn con học giỏi thì phải kính trọng thầy cô'},
+  {idiom:'Non xanh nước biếc', meaning:'Miêu tả cảnh thiên nhiên tươi đẹp'},
+  {idiom:'Chớ thấy sóng cả mà ngã tay chèo', meaning:'Không nên nản lòng trước khó khăn'},
+  {idiom:'Thẳng như ruột ngựa', meaning:'Người có tính thẳng thắn, bộc trực'},
+  {idiom:'Giấy rách phải giữ lấy lề', meaning:'Dù khó khăn vẫn phải giữ nền nếp, phẩm giá'},
+  {idiom:'Ở hiền gặp lành', meaning:'Sống tốt bụng sẽ gặp được điều may mắn'},
+  {idiom:'Gieo gió gặt bão', meaning:'Làm điều xấu sẽ nhận lại hậu quả xấu'},
+  {idiom:'Con hơn cha là nhà có phúc', meaning:'Con cái giỏi giang hơn cha mẹ là điều đáng mừng'},
+  {idiom:'Nước chảy đá mòn', meaning:'Kiên trì bền bỉ sẽ đạt được kết quả'},
+  {idiom:'Ăn chắc mặc bền', meaning:'Coi trọng sự chắc chắn, bền lâu hơn hình thức'}
+];
+function genThanhNgu(cfg){
+  const item=IDIOMS_VI[randInt(0,IDIOMS_VI.length-1)];
+  const dir=cfg.dir==='random' ? (Math.random()<0.5?'forward':'reverse') : cfg.dir;
+  let qtext, correctVal, pool;
+  if(dir==='reverse'){
+    qtext=`Ý nghĩa "${item.meaning}" được thể hiện qua câu tục ngữ nào?`;
+    correctVal=item.idiom;
+    pool=IDIOMS_VI.filter(x=>x!==item).map(x=>x.idiom);
+  } else {
+    qtext=`Câu "${item.idiom}" khuyên chúng ta điều gì?`;
+    correctVal=item.meaning;
+    pool=IDIOMS_VI.filter(x=>x!==item).map(x=>x.meaning);
+  }
+  const mc=buildMC(correctVal,pool);
+  return {q:qtext, opts:mc.opts, correct:mc.correct, topic:"Thành ngữ - Tục ngữ"};
+}
+
+const ALL_GENS_VIET=[genTuLoai, genDongNghia, genTraiNghia, genKieuCau, genDauCau, genChinhTa, genThanhNgu];
+const VIET_SETS=[
+  {id:1, title:"Bộ đề 1", icon:"🔤", desc:"Từ loại: Danh từ - Động từ - Tính từ", gens:[genTuLoai]},
+  {id:2, title:"Bộ đề 2", icon:"🔁", desc:"Từ đồng nghĩa", gens:[genDongNghia]},
+  {id:3, title:"Bộ đề 3", icon:"↔️", desc:"Từ trái nghĩa", gens:[genTraiNghia]},
+  {id:4, title:"Bộ đề 4", icon:"📖", desc:"Kiểu câu: Ai làm gì? Ai thế nào? Ai là gì?", gens:[genKieuCau]},
+  {id:5, title:"Bộ đề 5", icon:"✒️", desc:"Dấu câu", gens:[genDauCau]},
+  {id:6, title:"Bộ đề 6", icon:"✍️", desc:"Chính tả", gens:[genChinhTa]},
+  {id:7, title:"Bộ đề 7", icon:"💬", desc:"Thành ngữ - Tục ngữ", gens:[genThanhNgu]},
+  {id:8, title:"Bộ đề 8", icon:"🌟", desc:"Tổng hợp tất cả Tiếng Việt", gens:ALL_GENS_VIET, featured:true}
+];
+
+/* ================================================================== */
+/* ============================ TRỘN TẤT CẢ ========================= */
+/* ================================================================== */
+const ALL_GENS_MIX=[...ALL_GENS_MATH, ...ALL_GENS_EN, ...ALL_GENS_VIET];
+const MIX_SETS=[
+  {id:1, title:"Trộn 3 môn", icon:"🎲", desc:"Toán + Tiếng Anh + Tiếng Việt trộn ngẫu nhiên trong 1 lượt chơi", gens:ALL_GENS_MIX, featured:true}
+];
+
+const SUBJECTS=[
+  {id:'math', title:'Toán', icon:'🔢', desc:'Số học, hình học, đo lường', sets:MATH_SETS},
+  {id:'english', title:'Tiếng Anh', icon:'🔤', desc:'Từ vựng & ngữ pháp', sets:ENGLISH_SETS},
+  {id:'viet', title:'Tiếng Việt', icon:'✏️', desc:'Từ loại, ngữ pháp, tục ngữ', sets:VIET_SETS},
+  {id:'mix', title:'Trộn tất cả', icon:'🎲', desc:'Cả 3 môn trong 1 lượt', sets:MIX_SETS}
+];
+
+/* ================================================================== */
+/* ========================== ENGINE CHUNG =========================== */
+/* ================================================================== */
+const SESSION_LEN=30;
+const TIME_LIMIT=60;
+
+function generateSession(set, n, cfg){
+  const qs=[]; const seen=new Set(); let guard=0;
+  while(qs.length<n && guard<n*40){
+    guard++;
+    const gen=set.gens[randInt(0,set.gens.length-1)];
+    const item=gen(cfg);
+    if(!seen.has(item.q)){ seen.add(item.q); qs.push(item); }
+  }
+  return qs;
+}
+
+function makeStars(){
+  const container=document.getElementById('stars');
+  let html='';
+  for(let i=0;i<60;i++){
+    const size=Math.random()*2+1;
+    html+=`<div class="star" style="width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${Math.random()*0.7+0.2}"></div>`;
+  }
+  container.innerHTML=html;
+}
+makeStars();
+
+let currentDifficulty='medium';
+let currentSubjectId='math';
+
+function setDifficulty(d){
+  currentDifficulty=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.toggle('active', b.dataset.diff===d));
+}
+
+function renderSubjectGrid(){
+  const grid=document.getElementById('subjectGrid');
+  grid.innerHTML='';
+  SUBJECTS.forEach(subj=>{
+    const card=document.createElement('div');
+    card.className='subject-card'+(subj.id===currentSubjectId?' selected':'');
+    card.innerHTML=`<span class="subj-icon">${subj.icon}</span><div class="subj-title">${subj.title}</div><div class="subj-desc">${subj.desc}</div>`;
+    card.onclick=()=>selectSubject(subj.id);
+    grid.appendChild(card);
+  });
+}
+
+function selectSubject(id){
+  currentSubjectId=id;
+  renderSubjectGrid();
+  renderDeckGrid();
+}
+
+function renderDeckGrid(){
+  const grid=document.getElementById('deckGrid');
+  grid.innerHTML='';
+  const subj=SUBJECTS.find(s=>s.id===currentSubjectId);
+  subj.sets.forEach(set=>{
+    const card=document.createElement('div');
+    card.className='deck-card'+(set.featured?' featured':'');
+    card.innerHTML=`<span class="deck-icon">${set.icon}</span><div class="deck-title">${set.title}</div><div class="deck-desc">${set.desc}</div>`;
+    card.onclick=()=>startGame(set);
+    grid.appendChild(card);
+  });
+}
+
+renderSubjectGrid();
+renderDeckGrid();
+
+function initTrack(count){
+  const wrap=document.getElementById('trackWrap');
+  wrap.querySelectorAll('.planet').forEach(e=>e.remove());
+  const colors=["#3DD6C0","#4E8CFF","#FFC93C","#FF6B6B","#6C5CE7"];
+  const step=Math.max(1, Math.round(count/8));
+  let ci=0;
+  for(let i=step;i<count;i+=step){
+    const p=document.createElement('div');
+    p.className='planet';
+    p.style.left=(i/count*100)+'%';
+    p.style.background=colors[ci%colors.length];
+    wrap.appendChild(p);
+    ci++;
+  }
+}
+
+let questions=[];
+let currentSet=null;
+let sessionDifficulty='medium';
+let current=0, score=0, streak=0, correctCount=0;
+let timer=null, timeLeft=TIME_LIMIT;
+
+function showDeckMenu(){
+  document.getElementById('quizScreen').classList.add('hidden');
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden');
+  document.getElementById('trackFill').style.width='0%';
+  document.getElementById('rocket').style.left='0%';
+  document.getElementById('trackWrap').querySelectorAll('.planet').forEach(e=>e.remove());
+}
+
+function startGame(set){
+  currentSet=set;
+  sessionDifficulty=currentDifficulty;
+  const cfg=DIFFICULTY_CONFIG[sessionDifficulty];
+  questions=generateSession(set, SESSION_LEN, cfg);
+  current=0; score=0; streak=0; correctCount=0;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('quizScreen').classList.remove('hidden');
+  const subj=SUBJECTS.find(s=>s.id===currentSubjectId);
+  document.getElementById('deckInfo').textContent=`${subj.icon} ${subj.title} · ${set.title} · Độ khó: ${DIFF_LABEL[sessionDifficulty]}`;
+  initTrack(questions.length);
+  updateHUD();
+  updateRocket();
+  showQuestion();
+}
+
+function replaySameSet(){
+  if(currentSet) startGame(currentSet);
+  else showDeckMenu();
+}
+
+function updateHUD(){
+  document.getElementById('scoreVal').textContent=score;
+  document.getElementById('streakVal').textContent=streak;
+}
+
+function updateRocket(){
+  const pct=(current/questions.length)*100;
+  document.getElementById('trackFill').style.width=pct+'%';
+  document.getElementById('rocket').style.left=pct+'%';
+}
+
+const shapes=["▲","●","■","◆"];
+const answerClasses=["a0","a1","a2","a3"];
+
+function showQuestion(){
+  const item=questions[current];
+  document.getElementById('qNum').textContent=`CÂU ${current+1}/${questions.length} · ${item.topic.toUpperCase()}`;
+  document.getElementById('qText').textContent=item.q;
+  document.getElementById('feedback').textContent='';
+  document.getElementById('nextBtn').classList.remove('show');
+
+  const answersEl=document.getElementById('answers');
+  answersEl.innerHTML='';
+  item.opts.forEach((opt,idx)=>{
+    const btn=document.createElement('button');
+    btn.className=`ans-btn ${answerClasses[idx]}`;
+    btn.innerHTML=`<span class="shape">${shapes[idx]}</span><span>${opt}</span>`;
+    btn.onclick=()=>selectAnswer(idx);
+    answersEl.appendChild(btn);
+  });
+
+  timeLeft=TIME_LIMIT;
+  document.getElementById('timerVal').textContent=timeLeft;
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timerVal').textContent=Math.max(timeLeft,0);
+    if(timeLeft<=0){ clearInterval(timer); selectAnswer(-1); }
+  },1000);
+}
+
+function selectAnswer(idx){
+  clearInterval(timer);
+  const item=questions[current];
+  const buttons=document.querySelectorAll('.ans-btn');
+  buttons.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===item.correct) b.classList.add('correct');
+    else if(i===idx) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+
+  const feedback=document.getElementById('feedback');
+  if(idx===item.correct){
+    correctCount++; streak++;
+    const bonus=Math.max(20, Math.round(timeLeft*3));
+    const streakBonus=streak>=3?20:0;
+    score+=100+bonus+streakBonus;
+    feedback.textContent=streak>=3?`Chính xác! 🔥 Chuỗi đúng x${streak}`:"Chính xác! Giỏi lắm!";
+    feedback.style.color="#3CC77B";
+  } else {
+    streak=0;
+    feedback.textContent=idx===-1?"Hết giờ rồi! Đáp án đúng đã được đánh dấu.":"Chưa đúng, cố lên nhé!";
+    feedback.style.color="#FF6B6B";
+  }
+  updateHUD();
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion(){
+  current++;
+  updateRocket();
+  if(current>=questions.length) finishGame();
+  else showQuestion();
+}
+
+function finishGame(){
+  document.getElementById('quizScreen').classList.add('hidden');
+  document.getElementById('resultScreen').classList.remove('hidden');
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('finalCorrect').textContent=`${correctCount}/${questions.length}`;
+
+  const icon=document.getElementById('resultIcon');
+  const title=document.getElementById('resultTitle');
+  const sub=document.getElementById('resultSub');
+  if(correctCount===questions.length){
+    icon.textContent="🏆"; title.textContent="Xuất sắc! Điểm tuyệt đối!";
+    sub.textContent=`${currentSet.title} (${DIFF_LABEL[sessionDifficulty]}) đã bị chinh phục hoàn toàn!`;
+  } else if(correctCount>=questions.length*0.7){
+    icon.textContent="🚀"; title.textContent="Rất tốt! Sắp tới đích rồi!";
+    sub.textContent="Chỉ còn vài trạm nữa là hoàn hảo.";
+  } else if(correctCount>=questions.length*0.4){
+    icon.textContent="🪐"; title.textContent="Cố gắng thêm chút nữa nhé!";
+    sub.textContent="Ôn lại bài và bay lần nữa nào.";
+  } else {
+    icon.textContent="🌙"; title.textContent="Hạ cánh an toàn, luyện tập thêm nhé!";
+    sub.textContent="Có thể thử độ khó Dễ hơn để làm quen trước nhé.";
+  }
+}
+</script>
+</body>
+</html>
