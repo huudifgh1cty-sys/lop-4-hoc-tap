@@ -223,6 +223,55 @@ p.game-sub{text-align:center; margin:0 0 24px; color:#B7B9E0; font-size:14px; fo
 
 .hidden{display:none !important;}
 
+.player-bar{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-bottom:20px; padding:10px 12px;
+  background:rgba(255,255,255,0.04); border-radius:14px;
+  border:1px solid rgba(255,255,255,0.07);
+}
+.player-select-wrap{display:flex; align-items:center; gap:8px; flex:1; min-width:150px;}
+.player-label{font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; color:#B7B9E0; white-space:nowrap;}
+.player-select{
+  flex:1; background:rgba(255,255,255,0.07); color:#fff; border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px; padding:7px 10px; font-family:'Nunito',sans-serif; font-weight:700; font-size:13px;
+}
+.small-btn{
+  background:rgba(255,255,255,0.08); color:var(--cream); border:1px solid rgba(255,255,255,0.15);
+  font-family:'Baloo 2',sans-serif; font-weight:700; font-size:12px;
+  padding:7px 12px; border-radius:999px; cursor:pointer; white-space:nowrap;
+}
+.small-btn:hover{background:rgba(255,255,255,0.14);}
+.small-btn.gold{background:rgba(255,201,60,0.15); border-color:rgba(255,201,60,0.4); color:var(--gold);}
+
+.lb-row{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:12px; margin-bottom:8px;
+  background:rgba(255,255,255,0.04);
+}
+.lb-rank{
+  font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px;
+  width:24px; text-align:center; color:var(--gold); flex-shrink:0;
+}
+.lb-name{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; flex:1; color:#fff;}
+.lb-meta{font-size:12px; color:#9FA3D6; text-align:right;}
+
+.stats-summary{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;}
+.stats-summary .stat .num{font-size:20px;}
+
+.history-item{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:11px 12px; border-radius:12px; margin-bottom:8px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
+}
+.history-left{min-width:0;}
+.history-deck{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px; color:#fff;}
+.history-date{font-size:11px; color:#9FA3D6; margin-top:2px;}
+.history-right{text-align:right; flex-shrink:0;}
+.history-score{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px; color:var(--gold);}
+.history-acc{font-size:11px; color:#9FA3D6; margin-top:2px;}
+
+.empty-note{text-align:center; color:#9FA3D6; font-size:13px; padding:20px 0;}
+
 @media (max-width:420px){
   .answers{grid-template-columns:1fr;}
   .qtext{font-size:19px;}
@@ -245,6 +294,15 @@ p.game-sub{text-align:center; margin:0 0 24px; color:#B7B9E0; font-size:14px; fo
 
   <!-- START SCREEN: subject + difficulty + deck -->
   <div class="card" id="startScreen">
+    <div class="player-bar" id="playerBar">
+      <div class="player-select-wrap">
+        <span class="player-label">👤 Người chơi:</span>
+        <select class="player-select" id="playerSelect" onchange="onPlayerChange(this.value)"></select>
+      </div>
+      <button class="small-btn" onclick="promptAddPlayer()">+ Thêm</button>
+      <button class="small-btn gold" onclick="openStats()">📊 Thống kê</button>
+    </div>
+
     <div class="section-label">1. Chọn môn học</div>
     <div class="subject-grid" id="subjectGrid"></div>
 
@@ -288,10 +346,226 @@ p.game-sub{text-align:center; margin:0 0 24px; color:#B7B9E0; font-size:14px; fo
       <button class="ghost-btn" onclick="showDeckMenu()">Chọn bộ đề khác</button>
     </div>
   </div>
+
+  <!-- STATS SCREEN -->
+  <div class="card hidden" id="statsScreen">
+    <div class="section-label">🏆 Bảng xếp hạng (điểm cao nhất)</div>
+    <div id="leaderboardList"></div>
+
+    <div class="section-label" style="margin-top:18px;">📊 Chi tiết theo người chơi</div>
+    <div class="player-bar" style="margin-bottom:16px;">
+      <div class="player-select-wrap">
+        <span class="player-label">Xem của:</span>
+        <select class="player-select" id="statsPlayerSelect" onchange="renderStats(this.value)"></select>
+      </div>
+    </div>
+    <div class="stats-summary" id="statsSummary"></div>
+    <div id="historyList"></div>
+
+    <div class="result-actions" style="margin-top:6px;">
+      <button class="ghost-btn" onclick="clearHistoryConfirm()">Xóa lịch sử người này</button>
+      <button class="start-btn" onclick="closeStats()">Quay lại</button>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ============ helpers ============ */
+/* ============ players & history (localStorage, per-device) ============ */
+const LS_PLAYERS='quiz_players_v1';
+const LS_CURRENT='quiz_current_player_v1';
+const LS_HISTORY='quiz_history_v1';
+
+function loadPlayers(){
+  try{ const v=JSON.parse(localStorage.getItem(LS_PLAYERS)); return Array.isArray(v)?v:[]; }
+  catch(e){ return []; }
+}
+function savePlayers(list){ try{ localStorage.setItem(LS_PLAYERS, JSON.stringify(list)); }catch(e){} }
+function loadCurrentPlayer(){ try{ return localStorage.getItem(LS_CURRENT)||''; }catch(e){ return ''; } }
+function saveCurrentPlayer(name){ try{ localStorage.setItem(LS_CURRENT, name); }catch(e){} }
+function loadHistory(){
+  try{ const v=JSON.parse(localStorage.getItem(LS_HISTORY)); return Array.isArray(v)?v:[]; }
+  catch(e){ return []; }
+}
+function saveHistory(list){ try{ localStorage.setItem(LS_HISTORY, JSON.stringify(list)); }catch(e){} }
+
+function formatDate(ts){
+  const d=new Date(ts);
+  const pad=n=>String(n).padStart(2,'0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+let players=loadPlayers();
+let currentPlayer=loadCurrentPlayer();
+if(currentPlayer && !players.includes(currentPlayer)) currentPlayer='';
+if(!currentPlayer && players.length>0){ currentPlayer=players[0]; saveCurrentPlayer(currentPlayer); }
+
+function renderPlayerSelect(selectEl, selectedName){
+  selectEl.innerHTML='';
+  if(players.length===0){
+    const opt=document.createElement('option');
+    opt.value=''; opt.textContent='Chưa có người chơi';
+    selectEl.appendChild(opt);
+    return;
+  }
+  players.forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=p; opt.textContent=p;
+    if(p===selectedName) opt.selected=true;
+    selectEl.appendChild(opt);
+  });
+}
+
+function renderPlayerBar(){
+  renderPlayerSelect(document.getElementById('playerSelect'), currentPlayer);
+}
+
+function onPlayerChange(name){
+  currentPlayer=name;
+  saveCurrentPlayer(name);
+}
+
+function promptAddPlayer(){
+  const name=(window.prompt('Nhập tên người chơi mới:')||'').trim();
+  if(!name) return;
+  if(!players.includes(name)){ players.push(name); savePlayers(players); }
+  currentPlayer=name;
+  saveCurrentPlayer(name);
+  renderPlayerBar();
+}
+
+function ensurePlayer(){
+  if(currentPlayer) return true;
+  promptAddPlayer();
+  return !!currentPlayer;
+}
+
+function recordHistory(){
+  const subj=SUBJECTS.find(s=>s.id===currentSubjectId);
+  const history=loadHistory();
+  history.push({
+    id: Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    player: currentPlayer||'Khách',
+    subjectId: currentSubjectId,
+    subjectTitle: subj.title,
+    subjectIcon: subj.icon,
+    deckTitle: currentSet.title,
+    difficulty: sessionDifficulty,
+    score: score,
+    correct: correctCount,
+    total: questions.length,
+    ts: Date.now()
+  });
+  saveHistory(history);
+}
+
+function bestScoreFor(playerName, subjectId, deckTitle, difficulty){
+  const history=loadHistory().filter(h=>h.player===playerName && h.subjectId===subjectId && h.deckTitle===deckTitle && h.difficulty===difficulty);
+  if(history.length===0) return null;
+  return Math.max(...history.map(h=>h.score));
+}
+
+/* ---- stats screen ---- */
+function openStats(){
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('statsScreen').classList.remove('hidden');
+  renderLeaderboard();
+  const sel=document.getElementById('statsPlayerSelect');
+  renderPlayerSelect(sel, currentPlayer);
+  renderStats(sel.value);
+}
+function closeStats(){
+  document.getElementById('statsScreen').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden');
+}
+
+function renderLeaderboard(){
+  const container=document.getElementById('leaderboardList');
+  const history=loadHistory();
+  if(history.length===0 || players.length===0){
+    container.innerHTML='<div class="empty-note">Chưa có lượt chơi nào để xếp hạng.</div>';
+    return;
+  }
+  const byPlayer={};
+  players.forEach(p=>{ byPlayer[p]={games:0, best:0}; });
+  history.forEach(h=>{
+    if(!byPlayer[h.player]) byPlayer[h.player]={games:0, best:0};
+    byPlayer[h.player].games++;
+    if(h.score>byPlayer[h.player].best) byPlayer[h.player].best=h.score;
+  });
+  const rows=Object.entries(byPlayer).filter(([,v])=>v.games>0).sort((a,b)=>b[1].best-a[1].best);
+  if(rows.length===0){
+    container.innerHTML='<div class="empty-note">Chưa có lượt chơi nào để xếp hạng.</div>';
+    return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  container.innerHTML=rows.map(([name,v],i)=>`
+    <div class="lb-row">
+      <div class="lb-rank">${medals[i]||(i+1)}</div>
+      <div class="lb-name">${name}</div>
+      <div class="lb-meta">${v.games} lượt · cao nhất ${fmt(v.best)} điểm</div>
+    </div>
+  `).join('');
+}
+
+function renderStats(playerName){
+  document.getElementById('statsPlayerSelect').value=playerName||'';
+  const summaryEl=document.getElementById('statsSummary');
+  const listEl=document.getElementById('historyList');
+  if(!playerName){
+    summaryEl.innerHTML='';
+    listEl.innerHTML='<div class="empty-note">Chưa có người chơi nào. Hãy thêm người chơi ở màn hình chính.</div>';
+    return;
+  }
+  const history=loadHistory().filter(h=>h.player===playerName).sort((a,b)=>b.ts-a.ts);
+  if(history.length===0){
+    summaryEl.innerHTML='';
+    listEl.innerHTML='<div class="empty-note">'+playerName+' chưa chơi lượt nào.</div>';
+    return;
+  }
+  const totalGames=history.length;
+  const bestScore=Math.max(...history.map(h=>h.score));
+  const avgAcc=Math.round(history.reduce((sum,h)=>sum+(h.correct/h.total),0)/totalGames*100);
+  const subjectCounts={};
+  history.forEach(h=>{ subjectCounts[h.subjectTitle]=(subjectCounts[h.subjectTitle]||0)+1; });
+  const favSubject=Object.entries(subjectCounts).sort((a,b)=>b[1]-a[1])[0][0];
+
+  summaryEl.innerHTML=`
+    <div class="stat"><div class="num">${totalGames}</div><div class="lbl">Lượt đã chơi</div></div>
+    <div class="stat"><div class="num">${fmt(bestScore)}</div><div class="lbl">Điểm cao nhất</div></div>
+    <div class="stat"><div class="num">${avgAcc}%</div><div class="lbl">Tỉ lệ đúng TB</div></div>
+    <div class="stat"><div class="num" style="font-size:15px;">${favSubject}</div><div class="lbl">Môn chơi nhiều nhất</div></div>
+  `;
+
+  const shown=history.slice(0,25);
+  listEl.innerHTML=shown.map(h=>{
+    const acc=Math.round(h.correct/h.total*100);
+    return `
+    <div class="history-item">
+      <div class="history-left">
+        <div class="history-deck">${h.subjectIcon} ${h.subjectTitle} · ${h.deckTitle} · ${DIFF_LABEL[h.difficulty]||h.difficulty}</div>
+        <div class="history-date">${formatDate(h.ts)}</div>
+      </div>
+      <div class="history-right">
+        <div class="history-score">${fmt(h.score)} đ</div>
+        <div class="history-acc">${h.correct}/${h.total} (${acc}%)</div>
+      </div>
+    </div>`;
+  }).join('') + (history.length>25 ? `<div class="empty-note">...và ${history.length-25} lượt chơi cũ hơn</div>` : '');
+}
+
+function clearHistoryConfirm(){
+  const sel=document.getElementById('statsPlayerSelect');
+  const name=sel.value;
+  if(!name) return;
+  const ok=window.confirm(`Xóa toàn bộ lịch sử chơi của "${name}"? Không thể hoàn tác.`);
+  if(!ok) return;
+  const history=loadHistory().filter(h=>h.player!==name);
+  saveHistory(history);
+  renderLeaderboard();
+  renderStats(name);
+}
+
+
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function fmt(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
 function shuffleArr(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -1054,6 +1328,7 @@ function renderDeckGrid(){
   });
 }
 
+renderPlayerBar();
 renderSubjectGrid();
 renderDeckGrid();
 
@@ -1089,6 +1364,7 @@ function showDeckMenu(){
 }
 
 function startGame(set){
+  if(!ensurePlayer()) return;
   currentSet=set;
   sessionDifficulty=currentDifficulty;
   const cfg=DIFFICULTY_CONFIG[sessionDifficulty];
@@ -1187,11 +1463,15 @@ function nextQuestion(){
 }
 
 function finishGame(){
+  const prevBest=bestScoreFor(currentPlayer, currentSubjectId, currentSet.title, sessionDifficulty);
+  recordHistory();
+
   document.getElementById('quizScreen').classList.add('hidden');
   document.getElementById('resultScreen').classList.remove('hidden');
   document.getElementById('finalScore').textContent=score;
   document.getElementById('finalCorrect').textContent=`${correctCount}/${questions.length}`;
 
+  const isNewBest = prevBest!==null && score>prevBest;
   const icon=document.getElementById('resultIcon');
   const title=document.getElementById('resultTitle');
   const sub=document.getElementById('resultSub');
@@ -1207,6 +1487,9 @@ function finishGame(){
   } else {
     icon.textContent="🌙"; title.textContent="Hạ cánh an toàn, luyện tập thêm nhé!";
     sub.textContent="Có thể thử độ khó Dễ hơn để làm quen trước nhé.";
+  }
+  if(isNewBest){
+    sub.textContent += ` 🎉 Kỷ lục mới của ${currentPlayer} cho bộ đề này (trước đó ${fmt(prevBest)} điểm)!`;
   }
 }
 </script>
